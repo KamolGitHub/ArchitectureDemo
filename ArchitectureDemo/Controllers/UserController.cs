@@ -74,6 +74,8 @@ public class UserController : ControllerBase
             expires: DateTime.Now.AddMinutes(Convert.ToDouble("ExpirationInMinutes")),
             signingCredentials: credentials);
 
+        //call EmailSender to send notification
+        
         return Ok(new LoginViewModel()
         {
             Token = new JwtSecurityTokenHandler().WriteToken(token),
