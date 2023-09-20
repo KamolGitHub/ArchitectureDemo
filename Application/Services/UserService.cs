@@ -2,12 +2,12 @@ using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using ArchitectureDemo.Domain;
-using ArchitectureDemo.Repositories;
+using Application.Repositories;
+using Domain;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.IdentityModel.Tokens;
 
-namespace ArchitectureDemo.Services;
+namespace Application.Services;
 
 public class UserService : IUserService
 {
@@ -62,7 +62,7 @@ public class UserService : IUserService
 
         var saltBytes = Convert.FromBase64String(storedSalt);
 
-        var passwordHash = Convert.ToBase64String(KeyDerivation.Pbkdf2(string.Concat(enteredPassword, globalSalt),
+        var passwordHash = Convert.ToBase64String((byte[])KeyDerivation.Pbkdf2(string.Concat(enteredPassword, globalSalt),
             saltBytes, KeyDerivationPrf.HMACSHA256, iterationCount, numBytesRequested));
 
         return passwordHash == storedPassword;

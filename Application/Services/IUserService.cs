@@ -1,6 +1,6 @@
-using ArchitectureDemo.Domain;
+using Domain;
 
-namespace ArchitectureDemo.Services;
+namespace Application.Services;
 
 public interface IUserService
 {

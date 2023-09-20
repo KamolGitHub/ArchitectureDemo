@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
-using ArchitectureDemo.Domain;
-using ArchitectureDemo.Persistence;
+using Application.Persistence;
+using Domain;
 using Microsoft.EntityFrameworkCore;
 
-namespace ArchitectureDemo.Repositories;
+namespace Application.Repositories;
 
 public class UserRepository : IUserRepository
 {

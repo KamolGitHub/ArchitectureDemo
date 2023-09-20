@@ -1,6 +1,6 @@
-using ArchitectureDemo.Domain;
+using Domain;
 
-namespace ArchitectureDemo.Repositories;
+namespace Application.Repositories;
 
 public interface IUserRepository
 {

@@ -1,7 +1,7 @@
-using ArchitectureDemo.Domain;
+using Domain;
 using Microsoft.EntityFrameworkCore;
 
-namespace ArchitectureDemo.Persistence;
+namespace Application.Persistence;
 
 public interface IApplicationDbContext
 {

@@ -1,15 +1,7 @@
-using System.ComponentModel.DataAnnotations;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using ArchitectureDemo.Persistence;
+using Application.Services;
 using ArchitectureDemo.Requests;
-using ArchitectureDemo.Services;
 using ArchitectureDemo.ViewModels;
-using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 
 namespace ArchitectureDemo.Controllers;
 

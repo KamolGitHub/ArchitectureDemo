@@ -1,4 +1,4 @@
-namespace ArchitectureDemo.Domain;
+namespace Domain;
 
 public class User
 {

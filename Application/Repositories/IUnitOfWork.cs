@@ -1,4 +1,4 @@
-namespace ArchitectureDemo.Repositories;
+namespace Application.Repositories;
 
 public interface IUnitOfWork : IDisposable
 {
