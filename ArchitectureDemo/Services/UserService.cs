@@ -3,55 +3,30 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using ArchitectureDemo.Domain;
-using ArchitectureDemo.Persistence;
+using ArchitectureDemo.Repositories;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace ArchitectureDemo.Services;
 
 public class UserService : IUserService
 {
-    private readonly IApplicationDbContext _applicationDbContext;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly INotifierService _notifierService;
 
-    public UserService(IApplicationDbContext applicationDbContext, INotifierService notifierService)
+    public UserService(IUnitOfWork unitOfWork, INotifierService notifierService)
     {
-        _applicationDbContext = applicationDbContext;
+        _unitOfWork = unitOfWork;
         _notifierService = notifierService;
     }
     
     public async Task<(string token, DateTime expiration)> Authenticate(string username, string password)
     {
-        var user = await _applicationDbContext.Users
-                       .Where(x => x.Username == username)
-                       .AsNoTracking()
-                       .SingleOrDefaultAsync(CancellationToken.None) ??
-                   throw new ValidationException("Введенный логин или пароль неверный.");
+        var user = await _unitOfWork.UserRepository.GetUserByUsername(username);
 
-        if (!user.IsActive)
-        {
-            throw new ValidationException("Пользователь не активен!");
-        }
+        var isVerified = Verify(password, user.Password, user.PasswordSalt, "someGlobalSalt");
 
-        if (string.IsNullOrEmpty(password))
-            throw new ArgumentException($"the {nameof(password)} value cannot be empty or null.");
-        
-
-        if (string.IsNullOrEmpty(user.Password))
-            throw new ArgumentException($"the {nameof(user.Password)} value cannot be empty or null.");
-
-        if (string.IsNullOrEmpty(user.PasswordSalt))
-            throw new ArgumentException($"the {nameof(user.PasswordSalt)} value cannot be empty or null.");
-
-        const string globalSalt = "someGlobalSalt";
-
-        var saltBytes = Convert.FromBase64String(user.PasswordSalt);
-
-        var passwordHash = Convert.ToBase64String(KeyDerivation.Pbkdf2(string.Concat(password, globalSalt),
-            saltBytes, KeyDerivationPrf.HMACSHA256, 1000, 256 / 8));
-
-        if (user.Password != passwordHash)
+        if (!isVerified)
         {
             throw new ValidationException("Введенный логин или пароль неверный.");
         }
@@ -61,6 +36,40 @@ public class UserService : IUserService
             new Claim(ClaimTypes.Name, username),
         };
 
+        (var token, var expiration) = CreateToken(claims);
+
+        await _notifierService.Send(user);
+        
+        return (token, expiration);
+    }
+
+    private bool Verify(string enteredPassword, string storedPassword, string storedSalt, string globalSalt)
+    {
+        const int iterationCount = 1000;
+        const int numBytesRequested = 128/8;
+        
+        if (string.IsNullOrEmpty(enteredPassword))
+            throw new ArgumentException("Value cannot be empty or null .", nameof(enteredPassword));
+
+        if (string.IsNullOrEmpty(storedPassword))
+            throw new ArgumentException("Value cannot be empty or null .", nameof(storedPassword));
+
+        if (string.IsNullOrEmpty(storedSalt))
+            throw new ArgumentException("Value cannot be empty or null .", nameof(storedSalt));
+
+        if (string.IsNullOrEmpty(globalSalt))
+            throw new ArgumentException("Value cannot be empty or null .", nameof(globalSalt));
+
+        var saltBytes = Convert.FromBase64String(storedSalt);
+
+        var passwordHash = Convert.ToBase64String(KeyDerivation.Pbkdf2(string.Concat(enteredPassword, globalSalt),
+            saltBytes, KeyDerivationPrf.HMACSHA256, iterationCount, numBytesRequested));
+
+        return passwordHash == storedPassword;
+    }
+
+    (string token, DateTime expiration) CreateToken(Claim[] claims)
+    {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("SecretKey"));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -74,8 +83,6 @@ public class UserService : IUserService
         var token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
         var expiration = jwtSecurityToken.ValidTo;
 
-        await _notifierService.Send(user);
-        
         return (token, expiration);
     }
 
