@@ -3,28 +3,35 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Application.Repositories;
-using Domain;
+using Application.Services;
+using MediatR;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Application.Services;
+namespace Application.Commands;
 
-public class UserService : IUserService
+public class AuthenticateUserCommand : IRequest<(string token, DateTime expiration)>
+{
+    public string Username { get; set; }
+    public string Password { get; set; }
+}
+
+public class AuthenticateUserCommandHandler : IRequestHandler<AuthenticateUserCommand,(string token, DateTime expiration)>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly INotifierService _notifierService;
 
-    public UserService(IUnitOfWork unitOfWork, INotifierService notifierService)
+    public AuthenticateUserCommandHandler(IUnitOfWork unitOfWork, INotifierService notifierService)
     {
         _unitOfWork = unitOfWork;
         _notifierService = notifierService;
     }
     
-    public async Task<(string token, DateTime expiration)> Authenticate(string username, string password)
+    public async Task<(string token, DateTime expiration)> Handle(AuthenticateUserCommand request, CancellationToken cancellationToken)
     {
-        var user = await _unitOfWork.UserRepository.GetUserByUsername(username);
+        var user = await _unitOfWork.UserRepository.GetUserByUsername(request.Username);
 
-        var isVerified = Verify(password, user.Password, user.PasswordSalt, "someGlobalSalt");
+        var isVerified = Verify(request.Password, user.Password, user.PasswordSalt, "someGlobalSalt");
 
         if (!isVerified)
         {
@@ -33,16 +40,16 @@ public class UserService : IUserService
 
         var claims = new[]
         {
-            new Claim(ClaimTypes.Name, username),
+            new Claim(ClaimTypes.Name, user.Username),
         };
 
-        (var token, var expiration) = CreateToken(claims);
+        var (token, expiration) = CreateToken(claims);
 
         await _notifierService.Send(user);
         
         return (token, expiration);
     }
-
+    
     private bool Verify(string enteredPassword, string storedPassword, string storedSalt, string globalSalt)
     {
         const int iterationCount = 1000;
@@ -84,20 +91,5 @@ public class UserService : IUserService
         var expiration = jwtSecurityToken.ValidTo;
 
         return (token, expiration);
-    }
-
-    public Task<User> GetProfile()
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<User> UpdateProfile()
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<bool> Logout()
-    {
-        throw new NotImplementedException();
     }
 }

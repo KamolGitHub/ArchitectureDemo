@@ -1,9 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "6yRZlNPzjaXAB+TdVzZ/ds7SdG51v5khvblFcxPmD7ujd+K3zSWrbYW7uLK9K8uWpOSF+FikoWy94s5Qvazv8A==",
+  "dgSpecHash": "NaqYyDb88caP6xXG+rG2pyS5o2XDW+gevb2OCMSigIv6Iym13xS+SlQaoM9FKD09iOJZPD56A9UqpwY86SmDsA==",
   "success": true,
   "projectFilePath": "C:\\Users\\kamol\\RiderProjects\\ArchitectureDemo\\ArchitectureDemo\\ArchitectureDemo.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\kamol\\.nuget\\packages\\mediatr\\12.1.1\\mediatr.12.1.1.nupkg.sha512",
+    "C:\\Users\\kamol\\.nuget\\packages\\mediatr.contracts\\2.0.1\\mediatr.contracts.2.0.1.nupkg.sha512",
     "C:\\Users\\kamol\\.nuget\\packages\\microsoft.aspnetcore.cryptography.internal\\7.0.11\\microsoft.aspnetcore.cryptography.internal.7.0.11.nupkg.sha512",
     "C:\\Users\\kamol\\.nuget\\packages\\microsoft.aspnetcore.cryptography.keyderivation\\7.0.11\\microsoft.aspnetcore.cryptography.keyderivation.7.0.11.nupkg.sha512",
     "C:\\Users\\kamol\\.nuget\\packages\\microsoft.aspnetcore.openapi\\7.0.11\\microsoft.aspnetcore.openapi.7.0.11.nupkg.sha512",

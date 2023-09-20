@@ -1,6 +1,8 @@
+using Application.Commands;
 using Application.Services;
 using ArchitectureDemo.Requests;
 using ArchitectureDemo.ViewModels;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ArchitectureDemo.Controllers;
@@ -9,17 +11,21 @@ namespace ArchitectureDemo.Controllers;
 [Route("[controller]")]
 public class UserController : ControllerBase
 {
-    private readonly IUserService _userService;
+    private readonly IMediator _mediator;
 
-    public UserController(IUserService userService)
+    public UserController(IMediator mediator)
     {
-        _userService = userService;
+        _mediator = mediator;
     }
 
     [HttpPost("authenticate")]
     public async Task<IActionResult> Authenticate([FromBody] LoginRequest request)
     {
-        var result = await _userService.Authenticate(request.Username, request.Password);
+        var result = await _mediator.Send(new AuthenticateUserCommand()
+        {
+            Username = request.Username,
+            Password = request.Password
+        });
 
         return Ok(new LoginViewModel()
         {
