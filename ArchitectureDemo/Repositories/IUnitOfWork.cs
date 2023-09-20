@@ -6,5 +6,5 @@ public interface IUnitOfWork : IDisposable
     
     //other repositories
     
-    int SaveChanges();    
+    public Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken());    
 }
