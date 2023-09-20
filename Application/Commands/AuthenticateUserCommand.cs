@@ -2,10 +2,12 @@ using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Application.Repositories;
+using Application.Persistence;
 using Application.Services;
+using Domain;
 using MediatR;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Application.Commands;
@@ -18,18 +20,18 @@ public class AuthenticateUserCommand : IRequest<(string token, DateTime expirati
 
 public class AuthenticateUserCommandHandler : IRequestHandler<AuthenticateUserCommand,(string token, DateTime expiration)>
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IApplicationDbContext _applicationDbContext;
     private readonly INotifierService _notifierService;
 
-    public AuthenticateUserCommandHandler(IUnitOfWork unitOfWork, INotifierService notifierService)
+    public AuthenticateUserCommandHandler(IApplicationDbContext applicationDbContext, INotifierService notifierService)
     {
-        _unitOfWork = unitOfWork;
+        _applicationDbContext = applicationDbContext;
         _notifierService = notifierService;
     }
     
     public async Task<(string token, DateTime expiration)> Handle(AuthenticateUserCommand request, CancellationToken cancellationToken)
     {
-        var user = await _unitOfWork.UserRepository.GetUserByUsername(request.Username);
+        var user = await GetUserByUsername(request.Username);
 
         var isVerified = Verify(request.Password, user.Password, user.PasswordSalt, "someGlobalSalt");
 
@@ -48,6 +50,22 @@ public class AuthenticateUserCommandHandler : IRequestHandler<AuthenticateUserCo
         await _notifierService.Send(user);
         
         return (token, expiration);
+    }
+
+    private async Task<User> GetUserByUsername(string username)
+    {
+        var user = await _applicationDbContext.Users
+                       .Where(x => x.Username == username)
+                       .AsNoTracking()
+                       .SingleOrDefaultAsync(CancellationToken.None) ??
+                   throw new ValidationException("Введенный логин или пароль неверный.");
+
+        if (!user.IsActive)
+        {
+            throw new ValidationException("Пользователь не активен!");
+        }
+
+        return user;
     }
     
     private bool Verify(string enteredPassword, string storedPassword, string storedSalt, string globalSalt)
