@@ -10,7 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace ArchitectureDemo.Features.Identities.Authenticate;
 
-public class Endpoint: IEndpoint
+public class Endpoint : IEndpoint
 {
     public void AddRoute(IEndpointRouteBuilder app)
     {
