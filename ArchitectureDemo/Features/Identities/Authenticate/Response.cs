@@ -1,6 +1,6 @@
-namespace ArchitectureDemo.ViewModels;
+namespace ArchitectureDemo.Features.Identities.Authenticate;
 
-public class LoginViewModel
+public class Response
 {
     public string Token { get; set; }
     public DateTime Expiration { get; set; }

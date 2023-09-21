@@ -1,6 +1,6 @@
-namespace ArchitectureDemo.Requests;
+namespace ArchitectureDemo.Features.Identities.Authenticate;
 
-public class LoginRequest
+public class Request
 {
     public string Username { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
