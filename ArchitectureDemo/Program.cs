@@ -19,8 +19,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<IEndpoint, AuthenticateUserEndpointsV4>();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -105,14 +103,6 @@ app.AddUserRoutesV2();
 
 #region v3
 app.AddAuthenticateUserRoute();
-#endregion
-
-#region v4
-var endpoints= app.Services.GetServices<IEndpoint>();
-foreach (var endpoint in endpoints)
-{
-    endpoint.AddRoute(app);
-}
 #endregion
 
 
